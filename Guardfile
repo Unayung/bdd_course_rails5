@@ -40,45 +40,6 @@ guard "cucumber", cucumber_options do
   end
 end
 
-guard 'livereload' do
-  extensions = {
-    css: :css,
-    scss: :css,
-    sass: :css,
-    js: :js,
-    coffee: :js,
-    html: :html,
-    png: :png,
-    gif: :gif,
-    jpg: :jpg,
-    jpeg: :jpeg,
-    # less: :less, # uncomment if you want LESS stylesheets done in browser
-  }
-
-  rails_view_exts = %w(erb haml slim)
-
-  # file types LiveReload may optimize refresh for
-  compiled_exts = extensions.values.uniq
-  watch(%r{public/.+\.(#{compiled_exts * '|'})})
-
-  extensions.each do |ext, type|
-    watch(%r{
-          (?:app|vendor)
-          (?:/assets/\w+/(?<path>[^.]+) # path+base without extension
-           (?<ext>\.#{ext})) # matching extension (must be first encountered)
-          (?:\.\w+|$) # other extensions
-          }x) do |m|
-      path = m[1]
-      "/assets/#{path}.#{type}"
-    end
-  end
-
-  # file needing a full reload of the page anyway
-  watch(%r{app/views/.+\.(#{rails_view_exts * '|'})$})
-  watch(%r{app/helpers/.+\.rb})
-  watch(%r{config/locales/.+\.yml})
-end
-
 # Note: The cmd option is now required due to the increasing number of ways
 #       rspec may be run, below are examples of the most common uses.
 #  * bundler: 'bundle exec rspec'
@@ -88,7 +49,7 @@ end
 #  * zeus: 'zeus rspec' (requires the server to be started separately)
 #  * 'just' rspec: 'rspec'
 
-guard :rspec, cmd: "bundle exec rspec" do
+guard :rspec, cmd: "rspec" do
   require "guard/rspec/dsl"
   dsl = Guard::RSpec::Dsl.new(self)
 
@@ -108,7 +69,9 @@ guard :rspec, cmd: "bundle exec rspec" do
   rails = dsl.rails(view_extensions: %w(erb haml slim))
   dsl.watch_spec_files_for(rails.app_files)
   dsl.watch_spec_files_for(rails.views)
-
+  
+  watch(%r{^app/controllers/(.+)_(controller)\.rb$})  { "spec/features" }
+  watch(%r{^app/models/(.+)\.rb$})  { "spec/features" }
   watch(rails.controllers) do |m|
     [
       rspec.spec.call("routing/#{m[1]}_routing"),
@@ -119,11 +82,11 @@ guard :rspec, cmd: "bundle exec rspec" do
 
   # Rails config changes
   watch(rails.spec_helper)     { rspec.spec_dir }
-  watch(rails.routes)          { "#{rspec.spec_dir}/routing" }
+  watch(rails.routes)          { "spec" } # { "#{rspec.spec_dir}/routing" }  
   watch(rails.app_controller)  { "#{rspec.spec_dir}/controllers" }
 
   # Capybara features specs
-  watch(rails.view_dirs)     { |m| rspec.spec.call("features/#{m[1]}") }
+  watch(rails.view_dirs)     { "spec/features" } # { |m| rspec.spec.call("features/#{m[1]}") } 
   watch(rails.layouts)       { |m| rspec.spec.call("features/#{m[1]}") }
 
   # Turnip features and steps
