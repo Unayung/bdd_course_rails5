@@ -1,6 +1,6 @@
-require "rails_helper"
+# require "rails_helper"
 
-RSpec.describe "Articles", type: :request do
+describe "Articles", type: :request do
   before do
     @article = Article.create(title: "Title one", body: "Body of article one")
   end

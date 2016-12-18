@@ -1,6 +1,6 @@
-require "rails_helper"
+# require "rails_helper"
 
-RSpec.feature "Listing Articles" do
+feature "Listing Articles" do
   before do
     @article1 = Article.create(title: "The first article", body: "Lorem ipsum dolor sit amet")
     @article2 = Article.create(title: "The second article", body: "Body of 2nd article")
